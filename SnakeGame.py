@@ -28,3 +28,37 @@ class Direction(Enum):
 # Yılan sınıfı
 class Snake:
     def __init__(self, x, y, color):
+        self.body = [(x, y)]
+        self.color = color
+        self.direction = Direction.RIGHT
+        self.grow = False
+    def move(self):
+        x, y = self.body[0]
+        if self.direction == Direction.UP:
+            y -= SNAKE_SPEED
+            if y < 0:
+                y = SCREEN_HEIGHT - SNAKE_SIZE
+        elif self.direction == Direction.DOWN:
+            y += SNAKE_SPEED
+            if y >= SCREEN_HEIGHT:
+                y = 0
+        elif self.direction == Direction.LEFT:
+            x -= SNAKE_SPEED
+            if x < 0:
+                x = SCREEN_WIDTH - SNAKE_SIZE
+        elif self.direction == Direction.RIGHT:
+            x += SNAKE_SPEED
+            if x >= SCREEN_WIDTH:
+                x = 0
+
+        self.body.insert(0, (x, y))
+        if not self.grow:
+            self.body.pop()
+        else:
+            self.grow = False
+
+    def grow_snake(self):
+        self.grow = True
+
+
+
