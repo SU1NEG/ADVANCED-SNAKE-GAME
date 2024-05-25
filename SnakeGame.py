@@ -60,5 +60,97 @@ class Snake:
     def grow_snake(self):
         self.grow = True
 
+    def draw(self, surface):
+        for segment in self.body:
+            pygame.draw.rect(surface, self.color, (segment[0], segment[1], SNAKE_SIZE, SNAKE_SIZE))
+
+    def check_eat_food(self, food_position, tolerance=SNAKE_SIZE):
+        head_x, head_y = self.body[0]
+        food_x, food_y = food_position
+        x_distance = abs(head_x - food_x)
+        y_distance = abs(head_y - food_y)
+        if x_distance < tolerance and y_distance < tolerance:
+            return True
+        return False
+
+    def check_collision_with_other(self, other_snake):
+        head = self.body[0]
+        return head in other_snake.body
+
+# Yem sınıfı
+class Food:
+    def __init__(self):
+        self.x = random.randrange(0, SCREEN_WIDTH - FOOD_SIZE, FOOD_SIZE)
+        self.y = random.randrange(0, SCREEN_HEIGHT - FOOD_SIZE, FOOD_SIZE)
+
+    def draw(self, surface):
+        pygame.draw.rect(surface, RED, (self.x, self.y, FOOD_SIZE, FOOD_SIZE))
+
+# Oyun sınıfı
+class Game:
+    def __init__(self):
+        self.surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption("Snake Game")
+        self.clock = pygame.time.Clock()
+
+        self.player = Snake(200, 200, GREEN)
+        self.ai = Snake(600, 400, ORANGE)
+        self.food = Food()
+
+        self.score_player = 0
+        self.score_ai = 0
+
+        self.error_rate = 0.0
+
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    self.player.direction = Direction.UP
+                elif event.key == pygame.K_DOWN:
+                    self.player.direction = Direction.DOWN
+                elif event.key == pygame.K_LEFT:
+                    self.player.direction = Direction.LEFT
+                elif event.key == pygame.K_RIGHT:
+                    self.player.direction = Direction.RIGHT
+
+    def bfs(self, start, target, snake_body):
+        queue = deque()
+        visited = set()
+        queue.append((start, []))
+
+        while queue:
+            current_node, path = queue.popleft()
+            if current_node == target:
+                return path
+
+            if current_node in visited:
+                continue
+
+            visited.add(current_node)
+            x, y = current_node
+
+            # Yukarı
+            next_node = (x, y - SNAKE_SPEED)
+            if y - SNAKE_SPEED >= 0 and next_node not in visited and next_node not in snake_body:
+                queue.append((next_node, path + [Direction.UP]))
+            # Aşağı
+            next_node = (x, y + SNAKE_SPEED)
+            if y + SNAKE_SPEED < SCREEN_HEIGHT and next_node not in visited and next_node not in snake_body:
+                queue.append((next_node, path + [Direction.DOWN]))
+            # Sol
+            next_node = (x - SNAKE_SPEED, y)
+            if x - SNAKE_SPEED >= 0 and next_node not in visited and next_node not in snake_body:
+                queue.append((next_node, path + [Direction.LEFT]))
+            # Sağ
+            next_node = (x + SNAKE_SPEED, y)
+            if x + SNAKE_SPEED < SCREEN_WIDTH and next_node not in visited and next_node not in snake_body:
+                queue.append((next_node, path + [Direction.RIGHT]))
+
+        return []
+    
 
 
