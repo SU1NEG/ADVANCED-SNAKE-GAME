@@ -151,6 +151,95 @@ class Game:
                 queue.append((next_node, path + [Direction.RIGHT]))
 
         return []
+
+    def move_ai(self):
+        x, y = self.ai.body[0]
+        target = (self.food.x, self.food.y)
+
+        if random.random() < self.error_rate:
+            self.ai.direction = random.choice([Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT])
+        else:
+            path = self.bfs((x, y), target, set(self.player.body))
+            if path:
+                self.ai.direction = path[0]
+        
+        self.ai.move()
+
+    def check_collisions(self):
+        if self.player.check_collision_with_other(self.ai):
+            print("Player loses!")
+            pygame.quit()
+            quit()
+        if self.ai.check_collision_with_other(self.player):
+            print("AI loses!")
+            pygame.quit()
+            quit()
+
+    def check_food_collision(self):
+        if self.player.check_eat_food((self.food.x, self.food.y)):
+            self.score_player += 1
+            self.player.grow_snake()
+            self.food = Food()
+        if self.ai.check_eat_food((self.food.x, self.food.y)):
+            self.score_ai += 1
+            self.ai.grow_snake()
+            self.food = Food()
+
+    def draw_score(self):
+        font = pygame.font.SysFont(None, 30)
+        score_player_text = font.render("Player Score: " + str(self.score_player), True, GREEN)
+        score_ai_text = font.render("AI Score: " + str(self.score_ai), True, ORANGE)
+        self.surface.blit(score_player_text, (10, 10))
+        self.surface.blit(score_ai_text, (10, 40))
+
+    def run(self):
+        while True:
+            self.surface.fill((0, 0, 0))
+
+            self.handle_events()
+
+            self.player.move()
+            self.move_ai()
+
+            self.check_collisions()
+            self.check_food_collision()
+
+            self.player.draw(self.surface)
+            self.ai.draw(self.surface)
+            self.food.draw(self.surface)
+            self.draw_score()
+
+            pygame.display.update()
+            self.clock.tick(10)
+
+# Oyunu başlat
+if __name__ == "__main__":
+    pygame.init()
+    game = Game()
+    game.run()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
 
 
